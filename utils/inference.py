@@ -41,7 +41,10 @@ def predict_image(image_bytes: bytes, model_type: str = "vit", model_path: str =
         raise RuntimeError("HF_API_KEY environment variable is not set. Please add it to your .env file.")
 
     url = MODEL_URLS.get(model_type, MODEL_URLS["vit"])
-    headers = {"Authorization": f"Bearer {hf_api_key}"}
+    headers = {
+        "Authorization": f"Bearer {hf_api_key}",
+        "Content-Type": "image/jpeg"
+    }
 
     response = requests.post(url, headers=headers, data=image_bytes)
     
