@@ -11,8 +11,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DISEASE_INFO_PATH = REPO_ROOT / "utils" / "disease_info.json"
 
 MODEL_URLS = {
-    "vit": "https://api-inference.huggingface.co/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification",
-    "swin": "https://api-inference.huggingface.co/models/100xFORTUNE/plant_disease_classification"
+    "vit": "https://router.huggingface.co/hf-inference/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification",
+    "swin": "https://router.huggingface.co/hf-inference/models/100xFORTUNE/plant_disease_classification"
 }
 
 @lru_cache(maxsize=1)
