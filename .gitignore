@@ -1,0 +1,6 @@
+*.pth
+backend/__pycache__/
+models/__pycache__/
+utils/__pycache__/
+__pycache__/
+.env
