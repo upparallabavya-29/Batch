@@ -12,7 +12,7 @@ DISEASE_INFO_PATH = REPO_ROOT / "utils" / "disease_info.json"
 
 MODEL_URLS = {
     "vit": "https://router.huggingface.co/hf-inference/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification",
-    "swin": "https://router.huggingface.co/hf-inference/models/100xFORTUNE/plant_disease_classification"
+    "swin": "https://router.huggingface.co/hf-inference/models/gianlab/swin-tiny-patch4-window7-224-finetuned-plantdisease"
 }
 
 @lru_cache(maxsize=1)
