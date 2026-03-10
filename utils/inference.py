@@ -51,34 +51,73 @@ def load_class_names() -> list[str]:
             return json.load(f)
     return []
 
-@lru_cache(maxsize=2)
-def get_local_model(model_type: str, num_classes: int, device: torch.device):
+def _detect_num_classes(checkpoint_path: Path) -> int:
+    """Inspect checkpoint's head/classifier layer to get the true num_classes."""
+    sd = torch.load(checkpoint_path, map_location="cpu")
+    if isinstance(sd, dict) and "state_dict" in sd:
+        sd = sd["state_dict"]
+    # Look for the output (bias) tensor of the classification head
+    for key in ("head.bias", "swin.head.bias", "vit.heads.head.bias",
+                "heads.head.bias", "classifier.bias", "fc.bias"):
+        if key in sd:
+            return sd[key].shape[0]
+    raise ValueError(f"Cannot determine num_classes from checkpoint {checkpoint_path}")
+
+
+def _load_checkpoint_into_model(model, checkpoint_path: Path, model_type: str, device):
+    """Load checkpoint, handling wrapped vs unwrapped key prefixes."""
+    sd = torch.load(checkpoint_path, map_location=device)
+    if isinstance(sd, dict) and "state_dict" in sd:
+        sd = sd["state_dict"]
+
+    # Determine whether the checkpoint already uses wrapper prefix
+    prefix = model_type + "."  # e.g. 'swin.' or 'vit.'
+    already_prefixed = any(k.startswith(prefix) for k in sd.keys())
+
+    if already_prefixed:
+        new_sd = sd
+    else:
+        # Checkpoint was saved WITHOUT wrapper – add the wrapper prefix
+        new_sd = {f"{prefix}{k}": v for k, v in sd.items()}
+
+    missing, unexpected = model.load_state_dict(new_sd, strict=False)
+    if missing:
+        # Critical if the head is missing — the predictions will be wrong
+        head_missing = [k for k in missing if "head" in k or "classifier" in k]
+        if head_missing:
+            import warnings
+            warnings.warn(
+                f"[{model_type}] Head weights missing after load: {head_missing}. "
+                "Predictions may be unreliable."
+            )
+
+
+_model_cache: dict = {}
+
+def get_local_model(model_type: str, device: torch.device):
+    """Build and cache a model, auto-detecting num_classes from the checkpoint."""
+    cache_key = (model_type, str(device))
+    if cache_key in _model_cache:
+        return _model_cache[cache_key]
+
+    checkpoint_path = REPO_ROOT / (
+        "vit_plant_disease.pth" if model_type == "vit" else "swin_plant_disease.pth"
+    )
+    if not checkpoint_path.exists():
+        return None
+
+    num_classes = _detect_num_classes(checkpoint_path)
+
     if model_type == "vit":
         model = get_vit_model(num_classes)
-        checkpoint_path = REPO_ROOT / "vit_plant_disease.pth"
     else:
         model = get_swin_model(num_classes)
-        checkpoint_path = REPO_ROOT / "swin_plant_disease.pth"
-    
-    if checkpoint_path.exists():
-        state_dict = torch.load(checkpoint_path, map_location=device)
-        
-        # Check if state_dict keys match the model's internal structure
-        # In our models, the actual torchvision model is in self.swin or self.vit
-        new_state_dict = {}
-        for k, v in state_dict.items():
-            if model_type == "swin" and not k.startswith("swin."):
-                new_state_dict[f"swin.{k}"] = v
-            elif model_type == "vit" and not k.startswith("vit."):
-                new_state_dict[f"vit.{k}"] = v
-            else:
-                new_state_dict[k] = v
-        
-        model.load_state_dict(new_state_dict, strict=False)
-        model.to(device)
-        model.eval()
-        return model
-    return None
+
+    _load_checkpoint_into_model(model, checkpoint_path, model_type, device)
+    model.to(device)
+    model.eval()
+    _model_cache[cache_key] = model
+    return model
 
 def _split_label(raw_label: str) -> tuple[str, str]:
     """
