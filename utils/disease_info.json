@@ -1,12 +1,147 @@
 {
   "healthy": {
-    "cause": "No disease symptoms detected.",
+    "cause": "No disease symptoms detected. The plant appears healthy.",
     "cure": "No treatment required.",
-    "prevention": "Continue regular crop monitoring and balanced nutrition."
+    "prevention": "Continue regular crop monitoring, balanced fertilization, and proper watering."
   },
   "default": {
-    "cause": "Pathogen infection and/or environmental stress can trigger this condition.",
-    "cure": "Remove heavily affected leaves and apply a crop-specific treatment recommended by local agronomy experts.",
-    "prevention": "Use certified seeds, maintain field hygiene, avoid leaf wetness, and rotate crops."
+    "cause": "Pathogen infection (fungal, bacterial, or viral) or environmental stress.",
+    "cure": "Remove heavily affected leaves. Apply a broad-spectrum fungicide or bactericide as appropriate.",
+    "prevention": "Use certified disease-free seeds, rotate crops, maintain field hygiene, avoid overhead watering."
+  },
+  "Apple scab": {
+    "cause": "Caused by the fungus Venturia inaequalis. Thrives in cool, wet spring weather.",
+    "cure": "Apply fungicides such as captan or myclobutanil. Remove and destroy infected leaves and fruit.",
+    "prevention": "Plant resistant varieties, ensure good air circulation, apply dormant sprays before bud break."
+  },
+  "Apple Cedar apple rust": {
+    "cause": "Caused by the fungus Gymnosporangium juniperi-virginianae. Requires both apple and juniper hosts.",
+    "cure": "Apply fungicides (myclobutanil, propiconazole) at early infection stages. Remove galls on nearby junipers.",
+    "prevention": "Plant resistant apple varieties, remove juniper hosts within 500m, apply preventive fungicides."
+  },
+  "Apple Black rot": {
+    "cause": "Caused by the fungus Botryosphaeria obtusa. Spreads through infected bark and mummified fruit.",
+    "cure": "Prune infected cankers 15cm below diseased tissue. Apply captan or thiophanate-methyl fungicides.",
+    "prevention": "Maintain good sanitation, remove mummified fruit, prune dead wood, ensure proper nutrition."
+  },
+  "Tomato Early blight": {
+    "cause": "Caused by the fungus Alternaria solani. Appears as dark concentric rings (target-board pattern) on lower leaves. Favored by warm, humid conditions.",
+    "cure": "Apply fungicides containing chlorothalonil, mancozeb, or copper-based products. Remove severely infected lower leaves immediately.",
+    "prevention": "Use disease-resistant varieties, practice crop rotation (3-year minimum), stake plants for better airflow, avoid wetting foliage."
+  },
+  "Tomato Late blight": {
+    "cause": "Caused by the oomycete Phytophthora infestans. Causes large, water-soaked, dark brown lesions on leaves and stems. Spreads rapidly in cool, wet conditions.",
+    "cure": "Apply fungicides containing chlorothalonil, mancozeb, or metalaxyl immediately. Remove and destroy all infected plant tissue.",
+    "prevention": "Plant certified disease-free transplants, avoid overhead irrigation, ensure good air circulation, apply preventive copper sprays."
+  },
+  "Tomato Leaf Mold": {
+    "cause": "Caused by the fungus Passalora fulva (syn. Cladosporium fulvum). Yellow patches on upper leaf surface with olive-green mold on underside. Thrives in high humidity (>85%).",
+    "cure": "Apply fungicides (chlorothalonil, mancozeb, copper hydroxide). Improve greenhouse ventilation and reduce humidity.",
+    "prevention": "Use resistant varieties, maintain humidity below 85%, ensure good air circulation, avoid wetting leaves."
+  },
+  "Tomato Septoria leaf spot": {
+    "cause": "Caused by the fungus Septoria lycopersici. Shows as small circular spots with grayish centers and dark borders with yellow halos on lower leaves.",
+    "cure": "Apply fungicides (chlorothalonil, mancozeb, copper sprays) at first sign of infection. Remove infected lower leaves.",
+    "prevention": "Rotate crops for 2+ years, use mulch to prevent soil splash, stake plants, use drip irrigation."
+  },
+  "Tomato Spider mites Two spotted spider mite": {
+    "cause": "Infestation by Tetranychus urticae. Causes stippling, yellowing, and bronzing of leaves. Mites form fine webbing on leaf undersides.",
+    "cure": "Apply miticides (abamectin, bifenazate) or insecticidal soap/neem oil. Remove heavily infested leaves.",
+    "prevention": "Maintain plant vigor with proper watering, encourage natural predators (predatory mites), avoid dusty conditions."
+  },
+  "Tomato Target Spot": {
+    "cause": "Caused by the fungus Corynespora cassiicola. Circular lesions with concentric rings and yellow halos on leaves, stems, and fruit.",
+    "cure": "Apply fungicides (azoxystrobin, chlorothalonil). Remove and destroy severely infected plant material.",
+    "prevention": "Use resistant varieties, practice crop rotation, improve airflow, avoid overhead irrigation."
+  },
+  "Tomato Tomato Yellow Leaf Curl Virus": {
+    "cause": "Caused by Tomato Yellow Leaf Curl Virus (TYLCV) transmitted by whiteflies (Bemisia tabaci). Symptoms: upward leaf curling, yellowing, stunting.",
+    "cure": "No cure once infected. Remove and destroy infected plants to prevent spread. Control whitefly populations with insecticides.",
+    "prevention": "Use TYLCV-resistant varieties, install yellow sticky traps, use reflective mulches, apply insecticides to control whiteflies."
+  },
+  "Tomato Tomato mosaic virus": {
+    "cause": "Caused by Tomato Mosaic Virus (ToMV), transmitted mechanically via tools, hands, or infected soil. Shows as mosaic leaf patterns, distortion, and stunted growth.",
+    "cure": "No chemical cure. Remove and destroy infected plants. Sterilize tools with 10% bleach solution.",
+    "prevention": "Use resistant varieties, wash hands before handling plants, sterilize tools, avoid tobacco products near plants."
+  },
+  "Tomato Bacterial spot": {
+    "cause": "Caused by Xanthomonas campestris pv. vesicatoria bacteria. Water-soaked spots that turn dark brown with yellow halos on leaves and fruit.",
+    "cure": "Apply copper-based bactericides combined with mancozeb at first signs. Remove and destroy heavily infected plant tissue.",
+    "prevention": "Use certified disease-free seed, practice crop rotation, avoid overhead irrigation, use resistant varieties."
+  },
+  "Potato Early blight": {
+    "cause": "Caused by Alternaria solani fungus. Dark, concentric ring lesions on older leaves. Favored by hot, dry weather followed by wet periods.",
+    "cure": "Apply fungicides (chlorothalonil, mancozeb, azoxystrobin). Remove infected lower leaves.",
+    "prevention": "Use certified seed potatoes, practice 3-year crop rotation, maintain plant vigor, apply preventive fungicides."
+  },
+  "Potato Late blight": {
+    "cause": "Caused by Phytophthora infestans. Large dark lesions on leaves with white mold on undersides. The pathogen that caused the Irish Potato Famine.",
+    "cure": "Apply systemic fungicides (metalaxyl, cymoxanil) as soon as symptoms appear. Destroy severely infected crops.",
+    "prevention": "Use certified seed potatoes, plant in well-drained soil, apply preventive fungicides in humid conditions."
+  },
+  "Corn Cercospora leaf spot Gray leaf spot": {
+    "cause": "Caused by Cercospora zeae-maydis. Long, rectangular, gray-to-tan lesions parallel to leaf veins. Favored by warm, humid conditions.",
+    "cure": "Apply triazole or strobilurin fungicides. There are no curative options once severe.",
+    "prevention": "Plant resistant hybrids, practice crop rotation, till infected residue, avoid dense planting."
+  },
+  "Corn Common rust": {
+    "cause": "Caused by Puccinia sorghi. Small, oval, powdery brick-red pustules on both leaf surfaces.",
+    "cure": "Apply fungicides (triazoles, strobilurins) at early infection. Most commercial hybrids have adequate resistance.",
+    "prevention": "Plant rust-resistant hybrids, apply preventive fungicides in high-risk areas."
+  },
+  "Corn Northern Leaf Blight": {
+    "cause": "Caused by Exserohilum turcicum. Long, tan, cigar-shaped lesions on leaves. Can cause significant yield loss.",
+    "cure": "Apply fungicides (propiconazole, pyraclostrobin) at early stages. Remove severely infected leaves.",
+    "prevention": "Plant resistant hybrids, practice crop rotation, till infected residue."
+  },
+  "Grape Black rot": {
+    "cause": "Caused by Guignardia bidwellii fungus. Brown lesions on leaves and mummified black berries.",
+    "cure": "Apply fungicides (myclobutanil, captan). Remove mummified berries and infected canes.",
+    "prevention": "Prune for good air circulation, apply fungicides from bud break, remove all mummified fruit."
+  },
+  "Grape Esca Black Measles": {
+    "cause": "A complex wood disease caused by several fungi (Phaeomoniella, Phaeoacremonium). Causes leaf scorch and internal wood streaking.",
+    "cure": "No effective chemical cure. Prune affected wood. Apply wound sealants after pruning.",
+    "prevention": "Prune during dry weather, use sanitized tools, apply wound protectants."
+  },
+  "Grape Leaf blight Isariopsis Leaf Spot": {
+    "cause": "Caused by Pseudocercospora vitis. Angular dark brown lesions on leaves, primarily near veins.",
+    "cure": "Apply copper-based fungicides or dithiocarbamates. Remove infected leaves.",
+    "prevention": "Ensure good air circulation, apply preventive copper sprays, remove infected debris."
+  },
+  "Cherry Powdery mildew": {
+    "cause": "Caused by Podosphaera clandestina fungus. White powdery coating on young leaves and shoots.",
+    "cure": "Apply sulfur-based fungicides or triazoles. Remove and destroy infected tissue.",
+    "prevention": "Plant resistant varieties, ensure air circulation, apply preventive sprays at bud break."
+  },
+  "Peach Bacterial spot": {
+    "cause": "Caused by Xanthomonas arboricola pv. pruni bacteria. Water-soaked spots turning angular dark lesions on leaves.",
+    "cure": "Apply copper-based bactericides in spring. Remove infected twigs during dormant pruning.",
+    "prevention": "Plant resistant varieties, apply copper sprays during dormant and early-season periods."
+  },
+  "Strawberry Leaf scorch": {
+    "cause": "Caused by Diplocarpon earlianum fungus. Small, dark purple spots that enlarge and cause marginal leaf browning.",
+    "cure": "Apply fungicides (captan, thiram). Remove and destroy infected leaves.",
+    "prevention": "Plant resistant varieties, use drip irrigation, maintain proper spacing for airflow."
+  },
+  "Squash Powdery mildew": {
+    "cause": "Caused by Erysiphe cichoracearum or Sphaerotheca fuliginea. White powdery patches on leaf surfaces.",
+    "cure": "Apply sulfur, potassium bicarbonate, or triazole fungicides. Remove severely infected leaves.",
+    "prevention": "Plant resistant varieties, avoid water stress, ensure good air circulation."
+  },
+  "Orange Haunglongbing Citrus greening": {
+    "cause": "Caused by the bacterium Candidatus Liberibacter asiaticus, spread by the Asian citrus psyllid. Causes mottled, yellowing leaves and misshapen, bitter fruit.",
+    "cure": "No cure. Infected trees should be removed. Control psyllid populations with insecticides.",
+    "prevention": "Use certified disease-free nursery stock, aggressively control psyllid populations, quarantine infected areas."
+  },
+  "Pepper bell Bacterial spot": {
+    "cause": "Caused by Xanthomonas campestris pv. vesicatoria. Water-soaked spots with yellow halos on leaves and fruit.",
+    "cure": "Apply copper-based bactericides. Remove infected plant material promptly.",
+    "prevention": "Use certified seeds, rotate crops, avoid overhead irrigation, use resistant varieties."
+  },
+  "Soybean Early blight": {
+    "cause": "Caused by various fungal pathogens under stress conditions. Brown lesions with yellow halos on leaves.",
+    "cure": "Apply appropriate fungicides. Ensure proper plant nutrition.",
+    "prevention": "Use resistant varieties, practice crop rotation, maintain proper plant spacing."
   }
 }
