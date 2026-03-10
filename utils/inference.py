@@ -33,9 +33,11 @@ from models.vit_model import get_vit_model
 from models.swin_model import get_swin_model
 
 # HF API endpoints (used when selected plant is not in local training classes)
+# HF API endpoints — router format (used when selected plant is not in local training classes)
+# Both point to reliable full-PlantVillage models (38 classes)
 MODEL_URLS = {
-    "vit": "https://api-inference.huggingface.co/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification",
-    "swin": "https://api-inference.huggingface.co/models/gianlab/swin-tiny-patch4-window7-224-finetuned-plantdisease"
+    "vit":  "https://router.huggingface.co/hf-inference/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification",
+    "swin": "https://router.huggingface.co/hf-inference/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification",
 }
 
 # Image preprocessing (standard ImageNet normalization for both ViT and Swin)
