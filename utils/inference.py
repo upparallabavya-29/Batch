@@ -2,13 +2,22 @@ from __future__ import annotations
 
 import json
 import os
+import io
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 import requests
+import torch
+from PIL import Image
+from torchvision import transforms
+
+# Import model definitions
+from models.vit_model import get_vit_model
+from models.swin_model import get_swin_model
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DISEASE_INFO_PATH = REPO_ROOT / "utils" / "disease_info.json"
+CLASS_NAMES_PATH = REPO_ROOT / "class_names.json"
 
 MODEL_URLS = {
     "vit": "https://router.huggingface.co/hf-inference/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification",
@@ -22,23 +31,133 @@ def load_disease_info() -> dict[str, dict[str, str]]:
             return json.load(f)
     return {}
 
-def _split_label(raw_label: str) -> tuple[str, str]:
-    if "___" in raw_label:
-        plant, disease = raw_label.split("___", 1)
-    elif "_" in raw_label:
-        parts = raw_label.split("_", 1)
-        if len(parts) > 1:
-            plant, disease = parts[0], parts[1]
-        else:
-             plant, disease = "Unknown", raw_label
+@lru_cache(maxsize=1)
+def load_class_names() -> list[str]:
+    if CLASS_NAMES_PATH.exists():
+        with CLASS_NAMES_PATH.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+@lru_cache(maxsize=2)
+def get_local_model(model_type: str, num_classes: int, device: torch.device):
+    if model_type == "vit":
+        model = get_vit_model(num_classes)
+        checkpoint_path = REPO_ROOT / "vit_plant_disease.pth"
     else:
-        plant, disease = "Unknown", raw_label
-    return plant.replace("_", " "), disease.replace("_", " ")
+        model = get_swin_model(num_classes)
+        checkpoint_path = REPO_ROOT / "swin_plant_disease.pth"
+    
+    if checkpoint_path.exists():
+        state_dict = torch.load(checkpoint_path, map_location=device)
+        
+        # Check if state_dict keys match the model's internal structure
+        # In our models, the actual torchvision model is in self.swin or self.vit
+        new_state_dict = {}
+        for k, v in state_dict.items():
+            if model_type == "swin" and not k.startswith("swin."):
+                new_state_dict[f"swin.{k}"] = v
+            elif model_type == "vit" and not k.startswith("vit."):
+                new_state_dict[f"vit.{k}"] = v
+            else:
+                new_state_dict[k] = v
+        
+        model.load_state_dict(new_state_dict, strict=False)
+        model.to(device)
+        model.eval()
+        return model
+    return None
+
+def _split_label(raw_label: str) -> tuple[str, str]:
+    """
+    Splits labels like 'Healthy___Apple', 'Apple___Apple_scab', or 'Chilli___Healthy'.
+    Returns (plant_name, disease_name).
+    """
+    # 1. Try triple underscore (primary separator)
+    if "___" in raw_label:
+        parts = raw_label.split("___", 1)
+        part1 = parts[0]
+        part2 = parts[1]
+    
+    # 2. Handle 'Healthy' as a special case in any format
+    elif "healthy" in raw_label.lower():
+        if raw_label.lower().startswith("healthy"):
+            part1 = "Healthy"
+            part2 = raw_label[7:].strip("_")
+        elif raw_label.lower().endswith("healthy"):
+            idx = raw_label.lower().rfind("healthy")
+            part1 = raw_label[:idx].strip("_")
+            part2 = "Healthy"
+        else:
+            # Contains 'healthy' somewhere in the middle
+            part1, part2 = raw_label, "Healthy"
+            
+    # 3. Fallback: Treat as single plant name, default disease to 'Healthy'
+    else:
+        part1, part2 = raw_label, "Healthy"
+
+    # Normalize strings
+    p1_clean = part1.strip().replace("_", " ")
+    p2_clean = part2.strip().replace("_", " ")
+
+    # Identify which part is 'Healthy' for the UI display logic
+    if p1_clean.lower() == "healthy":
+        plant_name = p2_clean
+        disease = "Healthy"
+    elif p2_clean.lower() == "healthy":
+        plant_name = p1_clean
+        disease = "Healthy"
+    else:
+        plant_name = p1_clean
+        disease = p2_clean
+
+    return plant_name, disease
 
 def predict_image(image_bytes: bytes, model_type: str = "vit", model_path: str = "vit_plant_disease.pth") -> dict[str, Any]:
+    # 1. Try Local Inference First
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    class_names = load_class_names()
+    
+    if class_names:
+        num_classes = len(class_names)
+        model = get_local_model(model_type, num_classes, device)
+        
+        if model:
+            # Preprocessing
+            transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            ])
+            
+            image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+            input_tensor = transform(image).unsqueeze(0).to(device)
+            
+            with torch.no_grad():
+                outputs = model(input_tensor)
+                probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
+                conf, index = torch.max(probabilities, 0)
+                label = class_names[index.item()]
+                conf = conf.item()
+
+            plant_name, disease = _split_label(label)
+            info = load_disease_info()
+            disease_key = "healthy" if "healthy" in disease.lower() else "default"
+            details = info.get(disease_key, info.get("default", {}))
+
+            return {
+                "plant_name": plant_name,
+                "disease": disease,
+                "confidence": round(conf * 100, 2),
+                "cause": details.get("cause", "No data available."),
+                "cure": details.get("cure", "No data available."),
+                "prevention": details.get("prevention", "No data available."),
+                "source": "local"
+            }
+
+    # 2. Fallback to HF API (if local model missing or fails)
     hf_api_key = os.getenv("HF_API_KEY")
     if not hf_api_key:
-        raise RuntimeError("HF_API_KEY environment variable is not set. Please add it to your .env file.")
+        raise RuntimeError("HF_API_KEY environment variable is not set and local model not found.")
 
     url = MODEL_URLS.get(model_type, MODEL_URLS["vit"])
     headers = {
@@ -53,7 +172,6 @@ def predict_image(image_bytes: bytes, model_type: str = "vit", model_path: str =
         
     result = response.json()
     
-    # HF usually returns a list of dicts: [{"label": "Healthy Apple", "score": 0.99}, ...]
     if isinstance(result, list) and len(result) > 0:
         top_prediction = result[0]
         label = top_prediction.get("label", "Unknown")
@@ -64,7 +182,6 @@ def predict_image(image_bytes: bytes, model_type: str = "vit", model_path: str =
          raise RuntimeError(f"Unexpected response format from Hugging Face API: {result}")
 
     plant_name, disease = _split_label(label)
-
     info = load_disease_info()
     disease_key = "healthy" if "healthy" in disease.lower() else "default"
     details = info.get(disease_key, info.get("default", {}))
@@ -76,4 +193,5 @@ def predict_image(image_bytes: bytes, model_type: str = "vit", model_path: str =
         "cause": details.get("cause", "No data available."),
         "cure": details.get("cure", "No data available."),
         "prevention": details.get("prevention", "No data available."),
+        "source": "hf_api"
     }

@@ -1,6 +1,22 @@
+# Models and Cache
 *.pth
+__pycache__/
 backend/__pycache__/
 models/__pycache__/
 utils/__pycache__/
-__pycache__/
+
+# Dependencies
+node_modules/
+.venv/
+env/
+venv/
+ENV/
+
+# Credentials and Secrets
 .env
+.env.*
+secrets.json
+*.key
+*.pem
+credentials.json
+.vscode/
