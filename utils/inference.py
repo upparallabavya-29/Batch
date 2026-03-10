@@ -171,8 +171,8 @@ def predict_image(image_bytes: bytes, model_type: str = "vit", model_path: str =
     warning_msg = None
     
     if class_names:
-        num_classes = len(class_names)
-        model = get_local_model(model_type, num_classes, device)
+        # Get model — auto-detects num_classes from checkpoint internally
+        model = get_local_model(model_type, device)
         
         if model:
             # Preprocessing
