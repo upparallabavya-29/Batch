@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 
 from utils.inference import predict_image
@@ -31,12 +31,21 @@ def health_check() -> dict[str, str]:
 
 
 @app.post("/predict")
-async def predict_plant_disease(file: UploadFile = File(...), model_type: str = "vit") -> dict:
+async def predict_plant_disease(
+    file: UploadFile = File(...), 
+    plant_name: str = Form(""), 
+    model_type: str = Form("vit")
+) -> dict:
     image_bytes = await file.read()
     model_path = "vit_plant_disease.pth" if model_type == "vit" else "swin_plant_disease.pth"
 
     try:
-        return predict_image(image_bytes=image_bytes, model_type=model_type, model_path=model_path)
+        return predict_image(
+            image_bytes=image_bytes, 
+            model_type=model_type, 
+            model_path=model_path,
+            target_plant_name=plant_name
+        )
     except FileNotFoundError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     except Exception as exc:

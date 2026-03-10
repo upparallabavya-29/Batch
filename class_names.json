@@ -1,1 +1,9 @@
-["Healthy___Apple", "Apple___Apple_scab", "Chilli___Healthy"]
+[
+    "Apple___Healthy",
+    "Apple___Apple_scab",
+    "Chilli___Healthy",
+    "Tomato___Early_blight",
+    "Tomato___Late_blight",
+    "Tomato___Leaf_Mold",
+    "Tomato___Healthy"
+]

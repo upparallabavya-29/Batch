@@ -201,8 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fd = new FormData();
         fd.append('file', selectedFile);
-        const model = modelInput.value;
-        const url = `http://127.0.0.1:8000/predict?model_type=${model}`;
+        fd.append('plant_name', plantNameIn.value.trim());
+        fd.append('model_type', modelInput.value);
+        const url = `http://127.0.0.1:8000/predict`;
 
         try {
             const res = await fetch(url, { method: 'POST', body: fd });
@@ -275,6 +276,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const healthy = (data.disease || '').toLowerCase().includes('healthy');
         statusBadge.textContent = healthy ? '✓ Healthy' : '⚠ Diseased';
         statusBadge.className = 'rbadge status-badge' + (healthy ? ' healthy-badge' : '');
+
+        const resWarning = document.getElementById('resWarning');
+        if (data.warning) {
+            resWarning.textContent = '⚠️ ' + data.warning;
+            resWarning.style.display = 'block';
+        } else {
+            resWarning.style.display = 'none';
+        }
+
+        const resMessage = document.getElementById('resMessage');
+        if (data.message) {
+            resMessage.textContent = 'ℹ️ ' + data.message;
+            resMessage.style.display = 'block';
+        } else {
+            resMessage.style.display = 'none';
+        }
     }
 
     /* ===========================================================

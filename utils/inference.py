@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import io
+import tempfile
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -11,13 +12,25 @@ import torch
 from PIL import Image
 from torchvision import transforms
 
+# --- Environment Configuration ---
+# Redirect temporary files and model cache to E: drive to avoid C: drive space issues
+REPO_ROOT = Path(__file__).resolve().parents[1]
+E_TEMP_DIR = REPO_ROOT / "temp"
+E_TEMP_DIR.mkdir(exist_ok=True)
+
+os.environ["TMPDIR"] = str(E_TEMP_DIR)
+os.environ["TEMP"] = str(E_TEMP_DIR)
+os.environ["TMP"] = str(E_TEMP_DIR)
+os.environ["TORCH_HOME"] = str(REPO_ROOT / "torch_cache")
+tempfile.tempdir = str(E_TEMP_DIR)
+
+# --- Path Definitions ---
+DISEASE_INFO_PATH = REPO_ROOT / "utils" / "disease_info.json"
+CLASS_NAMES_PATH = REPO_ROOT / "class_names.json"
+
 # Import model definitions
 from models.vit_model import get_vit_model
 from models.swin_model import get_swin_model
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DISEASE_INFO_PATH = REPO_ROOT / "utils" / "disease_info.json"
-CLASS_NAMES_PATH = REPO_ROOT / "class_names.json"
 
 MODEL_URLS = {
     "vit": "https://router.huggingface.co/hf-inference/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification",
@@ -112,10 +125,11 @@ def _split_label(raw_label: str) -> tuple[str, str]:
 
     return plant_name, disease
 
-def predict_image(image_bytes: bytes, model_type: str = "vit", model_path: str = "vit_plant_disease.pth") -> dict[str, Any]:
+def predict_image(image_bytes: bytes, model_type: str = "vit", model_path: str = "vit_plant_disease.pth", target_plant_name: str = "") -> dict[str, Any]:
     # 1. Try Local Inference First
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     class_names = load_class_names()
+    warning_msg = None
     
     if class_names:
         num_classes = len(class_names)
@@ -135,14 +149,42 @@ def predict_image(image_bytes: bytes, model_type: str = "vit", model_path: str =
             with torch.no_grad():
                 outputs = model(input_tensor)
                 probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
-                conf, index = torch.max(probabilities, 0)
+
+                # Two-Stage Logic
+                plant_probs = {}
+                for idx, name in enumerate(class_names):
+                    plant, _ = _split_label(name)
+                    plant_probs[plant.lower()] = plant_probs.get(plant.lower(), 0.0) + probabilities[idx].item()
+                
+                predicted_plant_lower = max(plant_probs, key=plant_probs.get)
+                predicted_plant = next((_split_label(name)[0] for name in class_names if _split_label(name)[0].lower() == predicted_plant_lower), "Unknown")
+
+                valid_plants = set(_split_label(name)[0].lower() for name in class_names)
+                target_lower = target_plant_name.strip().lower()
+                
+                if target_lower and target_lower in valid_plants:
+                    selected_plant_lower = target_lower
+                    if target_lower != predicted_plant_lower:
+                        warning_msg = f"Warning: You selected {target_plant_name}, but AI detected {predicted_plant}."
+                else:
+                    selected_plant_lower = predicted_plant_lower
+
+                restricted_probs = probabilities.clone()
+                for idx, name in enumerate(class_names):
+                    plant, _ = _split_label(name)
+                    if plant.lower() != selected_plant_lower:
+                        restricted_probs[idx] = -1.0
+                
+                _, index = torch.max(restricted_probs, 0)
                 label = class_names[index.item()]
-                conf = conf.item()
+                conf = probabilities[index.item()].item()
 
             plant_name, disease = _split_label(label)
             info = load_disease_info()
             disease_key = "healthy" if "healthy" in disease.lower() else "default"
             details = info.get(disease_key, info.get("default", {}))
+
+            message = "Low confidence prediction. Please upload a clearer image." if conf < 0.7 else None
 
             return {
                 "plant_name": plant_name,
@@ -151,7 +193,9 @@ def predict_image(image_bytes: bytes, model_type: str = "vit", model_path: str =
                 "cause": details.get("cause", "No data available."),
                 "cure": details.get("cure", "No data available."),
                 "prevention": details.get("prevention", "No data available."),
-                "source": "local"
+                "source": "local",
+                "warning": warning_msg,
+                "message": message
             }
 
     # 2. Fallback to HF API (if local model missing or fails)
