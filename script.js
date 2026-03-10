@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fd = new FormData();
         fd.append('file', selectedFile);
         const model = modelInput.value;
-        const url = `http://localhost:8000/predict?model_type=${model}`;
+        const url = `http://127.0.0.1:8000/predict?model_type=${model}`;
 
         try {
             const res = await fetch(url, { method: 'POST', body: fd });
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const errData = await res.json();
                     detail = errData.detail || detail;
-                } catch (e) {}
+                } catch (e) { }
                 throw new Error(detail);
             }
             const data = await res.json();
